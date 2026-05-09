@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  certflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: certflow-server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # IMPORTANT: Override this in production!
+      - JWT_SECRET=your-secure-random-string-here
+    volumes:
+      - certflow_data:/app/data
+      - certflow_certs:/app/certs
+
+volumes:
+  certflow_data:
+  certflow_certs:

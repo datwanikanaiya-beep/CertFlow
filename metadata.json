@@ -1,0 +1,6 @@
+{
+  "name": "SSL Cert Manager",
+  "description": "Multi-domain SSL certificate automation using Let's Encrypt and ACME protocol. Features HTTP-01 challenge routing, DNS-01 extensibility, secure storage, and auto-renewal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
