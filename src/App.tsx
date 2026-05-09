@@ -113,6 +113,45 @@ export default function App() {
     }
   };
 
+  const handleDownload = async (domain: string, type: string) => {
+    try {
+      const response = await fetch(`/api/certs/download/${domain}/${type}`);
+      if (!response.ok) {
+        let errorMessage = 'Failed to download file';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          const text = await response.text();
+          errorMessage = text || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${domain}.${type}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error: any) {
+      alert(`Download failed: ${error.message}`);
+    }
+  };
+
+  const handleEditCert = (cert: CertMeta) => {
+    setDomains(cert.domains.join(', '));
+    setEmail(cert.maintainerEmail);
+    // If the issuer doesn't have "Staging", "Fake", etc., it is production.
+    setUseProduction(cert.issuer ? !cert.issuer.toLowerCase().includes('staging') && !cert.issuer.toLowerCase().includes('fake') : false);
+    
+    // Scroll to the top of the page smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   useEffect(() => {
     checkAuth();
   }, []);
@@ -619,16 +658,25 @@ export default function App() {
                                     {isExpiringSoon ? <AlertTriangle className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
                                     Expires {formatDistanceToNow(expiresAt, { addSuffix: true })}
                                   </div>
+                                  <button onClick={() => handleEditCert(cert)} className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 hover:border-indigo-500/40 rounded-lg text-sm font-medium transition-all shadow-sm">
+                                    <RefreshCw className="h-4 w-4" /> Edit / Renew
+                                  </button>
                                 </div>
                               </div>
                               
                               <div className="mt-6 pt-5 border-t border-white/5 flex flex-wrap items-center gap-3 opacity-80 group-hover:opacity-100 transition-opacity">
-                                <a href={`/api/certs/download/${primaryDomain}/cert`} download className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 rounded-lg text-sm font-medium transition-all shadow-sm">
+                                <button onClick={() => handleDownload(primaryDomain, 'cert')} className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 rounded-lg text-sm font-medium transition-all shadow-sm">
                                   <Download className="h-4 w-4 text-cyan-400" /> Certificate (.cert)
-                                </a>
-                                <a href={`/api/certs/download/${primaryDomain}/key`} download className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 rounded-lg text-sm font-medium transition-all shadow-sm">
+                                </button>
+                                <button onClick={() => handleDownload(primaryDomain, 'chain')} className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 rounded-lg text-sm font-medium transition-all shadow-sm">
+                                  <Download className="h-4 w-4 text-cyan-400" /> Chain (.chain)
+                                </button>
+                                <button onClick={() => handleDownload(primaryDomain, 'fullchain')} className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 rounded-lg text-sm font-medium transition-all shadow-sm" title="Certificate + Intermediate Chain">
+                                  <Download className="h-4 w-4 text-cyan-400" /> Full Chain (.pem)
+                                </button>
+                                <button onClick={() => handleDownload(primaryDomain, 'key')} className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 rounded-lg text-sm font-medium transition-all shadow-sm">
                                   <Key className="h-4 w-4 text-cyan-400" /> Private Key (.key)
-                                </a>
+                                </button>
                               </div>
                             </li>
                            );

@@ -181,22 +181,97 @@ apiRouter.get("/certs/download/:domain/:type", authenticateToken, async (req: Au
     const userId = req.user!.id;
     const prefix = `user_${userId}_`;
 
-    if (type !== 'cert' && type !== 'key') {
+    if (type !== 'cert' && type !== 'key' && type !== 'chain' && type !== 'fullchain') {
       return res.status(400).send("Invalid file type requested.");
     }
     
     const filename = `${prefix}${domain}.${type}`;
+    let content: Buffer;
+
     if (!(await certStorage.fileExists(filename))) {
-      return res.status(404).send("File not found or access denied.");
+      // Backwards compatibility: if chain/fullchain/cert is missing, try to derive from existing .cert file
+      // Older versions saved the full chain in the .cert file.
+      const certFilename = `${prefix}${domain}.cert`;
+      if (await certStorage.fileExists(certFilename)) {
+        const fullCertContent = (await certStorage.readFile(certFilename)).toString();
+        const certs = fullCertContent.split('-----END CERTIFICATE-----')
+          .filter(c => c.trim().length > 0)
+          .map(c => c + '-----END CERTIFICATE-----');
+
+        if (type === 'cert') {
+          content = Buffer.from(certs[0] || "");
+        } else if (type === 'chain') {
+          content = Buffer.from(certs.slice(1).join('\n').trim());
+        } else if (type === 'fullchain') {
+          content = Buffer.from(fullCertContent);
+        } else {
+           // Key must exist as a file
+           return res.status(404).send("File not found.");
+        }
+        
+        if (content.length === 0) {
+          return res.status(404).send("File component not found in certificate.");
+        }
+      } else {
+        return res.status(404).send("File not found.");
+      }
+    } else {
+      content = await certStorage.readFile(filename);
     }
 
-    const content = await certStorage.readFile(filename);
     res.setHeader('Content-Disposition', `attachment; filename="${domain}.${type}"`);
     res.setHeader('Content-Type', 'application/x-pem-file');
     res.send(content);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
     res.status(500).send(message);
+  }
+});
+
+apiRouter.get("/certs/export/:domain", authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const { domain } = req.params;
+    const userId = req.user!.id;
+    const prefix = `user_${userId}_`;
+
+    let privateKey = "";
+    let certificate = "";
+    let chain = "";
+
+    // Load Private Key
+    try {
+      privateKey = (await certStorage.readFile(`${prefix}${domain}.key`)).toString();
+    } catch (e) {
+      return res.status(404).json({ error: "Private key not found." });
+    }
+
+    // Load Certificate and Chain (with backwards compatibility)
+    const certFilename = `${prefix}${domain}.cert`;
+    const chainFilename = `${prefix}${domain}.chain`;
+
+    if (await certStorage.fileExists(chainFilename)) {
+      certificate = (await certStorage.readFile(certFilename)).toString();
+      chain = (await certStorage.readFile(chainFilename)).toString();
+    } else if (await certStorage.fileExists(certFilename)) {
+      // Reconstruct from full cert
+      const fullCertContent = (await certStorage.readFile(certFilename)).toString();
+      const certs = fullCertContent.split('-----END CERTIFICATE-----')
+        .filter(c => c.trim().length > 0)
+        .map(c => c + '-----END CERTIFICATE-----');
+      
+      certificate = certs[0] || "";
+      chain = certs.slice(1).join('\n').trim();
+    } else {
+      return res.status(404).json({ error: "Certificate files not found." });
+    }
+
+    res.json({ 
+      privateKey, 
+      certificate, 
+      chain 
+    });
+  } catch (error: unknown) {
+    res.status(500).json({ error: "Internal server error while exporting certificate." });
   }
 });
 

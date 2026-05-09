@@ -1,49 +1,86 @@
 <div align="center">
-  <div style="background-color: #0f172a; padding: 40px; border-radius: 16px; border: 1px solid #1e293b;">
-    <h1 style="color: #fff; margin-bottom: 0;">CertFlow</h1>
-    <p style="color: #94a3b8; font-size: 1.2rem;">Simple, stunning, and automated Let's Encrypt production certificates.</p>
-  </div>
+  <img src="public/screenshots/dashboard.png" alt="CertFlow Dashboard" width="800" style="border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);" />
+  <br />
+  <br />
+  <h1>🌊 CertFlow</h1>
+  <p><strong>Premium, Stunning, and Automated Let's Encrypt SSL Manager</strong></p>
+  
+  <p>
+    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+    <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+    <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
+    <img src="https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
+    <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  </p>
+
+  <p align="center">
+    CertFlow is a professional-grade certificate management platform designed for developers who value both <strong>security</strong> and <strong>aesthetics</strong>. Skip the complex CLI commands and manage your SSL lifecycle through a gorgeous, glassmorphic dashboard.
+  </p>
 </div>
 
-# 🚀 Quick Start
+---
 
-CertFlow is an intuitive, fully-featured desktop-style web application that makes generating **Production-Level Let's Encrypt SSL Certificates** incredibly easy. It handles the complete ACME DNS-01 lifecycle in a gorgeous, user-friendly UI.
+## ✨ Key Features
 
-## Features
-- **Modern Dashboard**: Glowing dark-mode UI with glassmorphism panels.
-- **Production Certificates**: Generates actual trusted Let's Encrypt `.cert` and `.key` files.
-- **Wildcard & SAN Support**: Enter multiple domains like `example.com, *.example.com`.
-- **Background Automation**: Handles ACME client handshakes, CSR generation, and background polling.
+- 💎 **Ultra-Premium UI**: Fully responsive dark-mode dashboard built with Framer Motion and TailwindCSS.
+- 🔐 **Production Ready**: One-click generation of trusted Let's Encrypt certificates via ACME DNS-01.
+- 🌍 **Wildcard & Multi-Domain**: Comprehensive support for SANs and wildcard certificates (`*.domain.com`).
+- 🔄 **Smart Renewal**: Easily track expiration dates and renew/edit existing certificates in seconds.
+- 📦 **Docker Optimized**: Zero-config deployment with persistent volume support for your certs.
+- 🛠 **Full Control**: Download Private Keys, Leaf Certs, Intermediate Chains, and Full Chains separately.
 
-## 📦 How to Start
+## 🛠 Tech Stack
 
-**Prerequisites:** [Node.js](https://nodejs.org/en) (v18+ recommended)
+- **Frontend**: [React](https://reactjs.org/) + [Vite](https://vitejs.dev/) + [TailwindCSS](https://tailwindcss.com/)
+- **Backend**: [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/)
+- **Animation**: [Framer Motion](https://www.framer.com/motion/)
+- **ACME Logic**: [acme-client](https://github.com/publishlab/node-acme-client)
+- **Icons**: [Lucide React](https://lucide.dev/)
 
-### 1. Install & Run (One Command)
-Just clone the repository, install packages, and start the development server.
+## 🚀 Getting Started
+
+### 🐋 Run with Docker (Recommended)
+The easiest way to get CertFlow running is using Docker Compose:
 
 ```bash
-# 1. Install dependencies
-npm install
-
-# 2. Run the application
-npm run dev
+docker-compose up -d
 ```
+Your dashboard will be live at `http://localhost:3000`.
 
-The application will start at `http://localhost:3000`.
+### 💻 Manual Installation
 
-### 2. Generate Your Certificate
-1. Open the dashboard.
-2. Enter your Domains (e.g., `example.com, www.example.com`).
-3. Enter your Maintainer Email.
-4. Toggle **"Production Mode"** on if you want real trusted certificates (leave it off for testing/staging to avoid rate limits).
-5. Click **Generate Certificate**.
-6. The app will provide you with **TXT Records** you need to add to your DNS provider. 
-7. Click "Verify" once the records propagate, and download your newly minted certificates!
+1. **Clone & Install**
+   ```bash
+   git clone https://github.com/datwanikanaiya-beep/CertFlow.git
+   cd CertFlow
+   npm install
+   ```
 
-## ⚙️ Building for Production
-If you want to run this as a standalone production server:
-```bash
-npm run build
-npm run start
-```
+2. **Environment Setup**
+   Copy `.env.example` to `.env` and set your `JWT_SECRET`.
+
+3. **Start Development**
+   ```bash
+   npm run dev
+   ```
+
+## 📖 How it Works
+
+1. **Request**: Enter your domains and email. Choose "Production" for real certificates.
+2. **DNS Challenge**: CertFlow provides the exact TXT records you need to add to your DNS provider.
+3. **Verification**: Once your records propagate, click "Verify".
+4. **Download**: Securely download your `.cert`, `.key`, and `.chain` files immediately.
+
+---
+
+## 🤝 Contributing
+Contributions are welcome! Feel free to open issues or submit pull requests to help make CertFlow the best open-source SSL manager.
+
+## 📄 License
+MIT License. Free for everyone.
+
+---
+
+<p align="center">
+  <i>Developed with ❤️ for the developer community.</i>
+</p>

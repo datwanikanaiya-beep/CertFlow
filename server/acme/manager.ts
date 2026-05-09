@@ -95,11 +95,20 @@ export async function requestCertificateBg({ domains, maintainerEmail, jobId, us
     const primaryDomain = domains[0];
     const prefix = `user_${userId}_`;
     
-    const certFilename = `${prefix}${primaryDomain}.cert`;
+    // Split the full chain into individual certificates
+    const certs = cert.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g) || [];
+    const leafCert = certs[0] || '';
+    const intermediateChain = certs.slice(1).join('\n');
+
     const keyFilename = `${prefix}${primaryDomain}.key`;
+    const certFilename = `${prefix}${primaryDomain}.cert`; // Leaf only
+    const chainFilename = `${prefix}${primaryDomain}.chain`; // Intermediates only
+    const fullChainFilename = `${prefix}${primaryDomain}.fullchain`; // Both
     
     await certStorage.saveFile(keyFilename, certKey);
-    await certStorage.saveFile(certFilename, cert);
+    await certStorage.saveFile(certFilename, leafCert);
+    await certStorage.saveFile(chainFilename, intermediateChain);
+    await certStorage.saveFile(fullChainFilename, cert);
     
     // Save metadata
     await dataStorage.saveFile(`${prefix}${primaryDomain}.meta.json`, JSON.stringify({
